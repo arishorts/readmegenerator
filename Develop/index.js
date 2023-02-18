@@ -1,5 +1,6 @@
 "use strict";
 // TODO: Include packages needed for this application
+const generateMarkdown = require("./utils/generateMarkdown");
 const inquirer = require("inquirer");
 const fsPromises = require("fs").promises;
 // const fs = require("fs");
@@ -88,8 +89,14 @@ function init() {
     const weight = answers.weight;
     const bmi = ((weight / (height * height)) * 703).toFixed(2);
     // Use user feedback for... whatever!!
-    const output = `Your BMI is ${bmi}`;
-    console.log(output);
+    let output = `Your BMI is ${bmi}\n`;
+    const data = { title: "My Awesome Project" };
+    const markdown = generateMarkdown(data);
+
+    console.log(typeof output);
+    console.log(typeof markdown);
+    output += markdown;
+
     writeToFile(readmeFileName, output);
   });
 }
