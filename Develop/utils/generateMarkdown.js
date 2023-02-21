@@ -1,9 +1,9 @@
 const https = require("https");
 
-async function getRepo(data) {
+async function getAPI(path) {
   const options = {
     hostname: "api.github.com",
-    path: `/repos/${data.userName}/${data.repo}`,
+    path: `${path}`,
     headers: {
       "User-Agent": "potential-enigma", // GitHub API requires a user-agent header
     },
@@ -38,61 +38,44 @@ function renderLicenseBadge(license) {
 
 // TODO: Create a function that returns the license link
 // If there is no license, return an empty string
-function renderLicenseLink(license) {}
+function renderLicenseLink(licenseObj) {
+  return `${licenseObj.html_url}`;
+}
 
 // TODO: Create a function that returns the license section of README
 // If there is no license, return an empty string
-function renderLicenseSection(license) {}
+async function renderLicenseSection(answers) {
+  const licenseObj = await getAPI(`/licenses/${answers.license}`);
+  const licenseLink = renderLicenseLink(licenseObj);
+  const licenseBadges = renderLicenseBadge(answers);
+  return `${licenseLink}
+  
+  ${licenseBadges}`;
+}
 
 async function renderBadges(data) {
-  const options = {
-    hostname: "api.github.com",
-    path: `/repos/${data.userName}/${data.repo}/languages`,
-    headers: {
-      "User-Agent": "potential-enigma", // GitHub API requires a user-agent header
-    },
-  };
-
+  const languages = await getAPI(
+    `/repos/${data.userName}/${data.repo}/languages`
+  );
   const badges = []; // create an array to store badge strings
-
-  return new Promise((resolve, reject) => {
-    https
-      .get(options, (res) => {
-        let data = "";
-
-        res.on("data", (d) => {
-          data += d;
-        });
-
-        res.on("end", () => {
-          const languages = JSON.parse(data);
-          let total = 0;
-          for (let key in languages) {
-            total += languages[key];
-          }
-
-          for (let language in languages) {
-            badges.push(
-              `![badmath](https://img.shields.io/badge/${language}-${Math.round(
-                (languages[language] / total) * 100
-              )}%25-purple)`
-            );
-          }
-          resolve(badges.join("\n"));
-        });
-      })
-      .on("error", (err) => {
-        console.error(err);
-        reject(err);
-      });
-  });
+  let total = 0;
+  for (let key in languages) {
+    total += languages[key];
+  }
+  for (let language in languages) {
+    badges.push(
+      `![badmath](https://img.shields.io/badge/${language}-${Math.round(
+        (languages[language] / total) * 100
+      )}%25-purple)`
+    );
+  }
+  return badges.join("\n");
 }
 
 // TODO: Create a function to generate markdown for README
 async function generateMarkdown(answers) {
-  const info = await getRepo(answers);
-  console.log(info);
-  return `# ${answers.title}
+  //const info = await getAPI(`/repos/${answers.userName}/${answers.repo}`);
+  return `# ${answers.repo}
 
   # myWeatherService
 
@@ -113,6 +96,7 @@ async function generateMarkdown(answers) {
   ![alt text](./assets/images/usage.JPG)
   
   ## Badges:
+
   ${await renderBadges(answers)}
 
   ## How_to_Contribute:
@@ -123,10 +107,8 @@ async function generateMarkdown(answers) {
   
   
   ## License:
-  
-  MIT License https://choosealicense.com/licenses/mit/ <br>
 
-  ${renderLicenseBadge(answers)}
+  ${await renderLicenseSection(answers)}
 
   ---
   
@@ -134,4 +116,4 @@ async function generateMarkdown(answers) {
 `;
 }
 
-module.exports = generateMarkdown;
+module.exports = { generateMarkdown, getAPI };

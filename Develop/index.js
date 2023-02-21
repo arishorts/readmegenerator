@@ -25,6 +25,16 @@ var hasHowToContribute = false;
 var hasCredits = false;
 var hasLicense = false;
 
+async function renderLicenseSection(license) {
+  const licenses = await getAPI(`/licenses`);
+  //console.log(licenses);
+  const licensesArray = []; // create an array to store badge strings
+  for (let license in licenses) {
+    licensesArray.push(`${licenses[license].name}`);
+  }
+  return licensesArray;
+}
+
 // Create an array of questions for user input
 const questions = [
   {
@@ -49,17 +59,17 @@ const questions = [
       } else return true;
     },
   },
-  {
-    type: "input",
-    name: "title",
-    message: "What is the title of your project?",
-    validate: (input) => {
-      if (input === "") {
-        hasTitle = true;
-        return "Enter valid title";
-      } else return true;
-    },
-  },
+  //   {
+  //     type: "input",
+  //     name: "title",
+  //     message: "What is the title of your project?",
+  //     validate: (input) => {
+  //       if (input === "") {
+  //         hasTitle = true;
+  //         return "Enter valid title";
+  //       } else return true;
+  //     },
+  //   },
   //   {
   //     type: "input",
   //     name: "description",
@@ -98,9 +108,16 @@ const questions = [
   //   },
   {
     type: "list",
-    name: "list_type",
-    message: "What programming languages do you know?",
-    choices: ["MIT", "C++", "Java", "Python"],
+    name: "license",
+    message: "What license did you use?",
+    choices: async () => {
+      const licenses = await generateMarkdown.getAPI(`/licenses`);
+      const licensesArray = []; // create an array to store badge strings
+      for (let license in licenses) {
+        licensesArray.push(`${licenses[license].key}`);
+      }
+      return licensesArray;
+    },
     default: "Javascript",
   },
   //   {
@@ -131,7 +148,7 @@ async function writeToFile(fileName, data) {
 // Create a function to initialize app
 async function init() {
   const answers = await inquirer.prompt(questions);
-  const markdown = await generateMarkdown(answers);
+  const markdown = await generateMarkdown.generateMarkdown(answers);
   await writeToFile(readmeFileName, markdown);
 }
 
