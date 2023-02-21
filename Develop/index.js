@@ -1,5 +1,6 @@
 //https://www.youtube.com/watch?v=Qf5EXOyGRxw&ab_channel=Markodex
 //https://coding-boot-camp.github.io/full-stack/github/professional-readme-guide
+//https://nodejs.org/api/https.html#httpsgetoptions-callback
 
 // Include packages needed for this application
 const generateMarkdown = require("./utils/generateMarkdown");
@@ -7,16 +8,10 @@ const inquirer = require("inquirer");
 const fsPromises = require("fs").promises;
 const path = require("path");
 const os = require("os");
+const { connect } = require("http2");
 
 const desktopPath = path.join(os.homedir(), "Desktop");
 const readmeFileName = path.join(desktopPath, "README.md");
-
-var hasUserName = false;
-var hasEmail = false;
-var hasRepo = false;
-var hasTitle = false;
-var hasDescription = false;
-var hasLicense = false;
 
 // an array of questions for user input
 const questions = [
@@ -24,11 +19,51 @@ const questions = [
     type: "input",
     name: "userName",
     message: "Enter the repo owner's user name",
-    validate: (input) => {
+    validate: async (input) => {
       if (input === "") {
         return "Enter valid name";
       }
-      hasUserName = true;
+      try {
+        const usernameExists = await generateMarkdown.getAPI(
+          `https://api.github.com/users/${input}/repos`
+        );
+        if (
+          !usernameExists ||
+          usernameExists.length === 0 ||
+          usernameExists.message == "Not Found"
+        ) {
+          return "Username does not exist. Enter a valid name";
+        }
+        return true;
+      } catch (err) {
+        console.log(err);
+        return "An error occurred. Please try again";
+      }
+    },
+  },
+  {
+    type: "list",
+    name: "repo",
+    message: "What is the title of the repo?",
+    when: (answers) => {
+      if (answers.userName == "") return false;
+      return true;
+    },
+    choices: async (answers) => {
+      const repos = await generateMarkdown.getAPI(
+        `https://api.github.com/users/${answers.userName}/repos`
+      );
+      return repos.map((repo) => repo.name);
+    },
+  },
+  {
+    type: "input",
+    name: "title",
+    message: "What is the title of your project README?",
+    validate: (input) => {
+      if (input === "") {
+        return "Enter valid title or none";
+      }
       return true;
     },
   },
@@ -38,33 +73,19 @@ const questions = [
     message: "Enter the repo owner's email",
     validate: (input) => {
       if (input === "") {
-        return "Enter valid email";
+        return "Enter valid email or none";
       }
-      hasEmail = true;
       return true;
     },
   },
   {
     type: "input",
-    name: "repo",
-    message: "What is the title of the repo?",
+    name: "installation",
+    message: "Are there special installation instructions?",
     validate: (input) => {
       if (input === "") {
-        return "Enter valid repo";
+        return "Enter valid input or none";
       }
-      hasRepo = true;
-      return true;
-    },
-  },
-  {
-    type: "input",
-    name: "title",
-    message: "What is the title of your project?",
-    validate: (input) => {
-      if (input === "") {
-        return "Enter valid title";
-      }
-      hasTitle = true;
       return true;
     },
   },
@@ -74,9 +95,8 @@ const questions = [
     message: "Share project tests",
     validate: (input) => {
       if (input === "") {
-        return "Enter valid tests";
+        return "Enter valid tests or none";
       }
-      hasDescription = true;
       return true;
     },
   },
@@ -86,9 +106,8 @@ const questions = [
     message: "Share a description of the project",
     validate: (input) => {
       if (input === "") {
-        return "Enter valid description";
+        return "Enter valid description or none";
       }
-      hasDescription = true;
       return true;
     },
   },
@@ -98,7 +117,7 @@ const questions = [
     message: "What license did you use?",
     choices: async () => {
       const licenses = await generateMarkdown.getAPI(`/licenses`);
-      const licensesArray = [];
+      const licensesArray = ["None"];
       for (let license in licenses) {
         licensesArray.push(`${licenses[license].key.toUpperCase()}`);
       }
@@ -108,7 +127,6 @@ const questions = [
       if (input === "") {
         return "Choose valid license";
       }
-      hasLicense = true;
       return true;
     },
   },

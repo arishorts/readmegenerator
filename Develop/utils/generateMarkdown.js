@@ -34,24 +34,23 @@ async function getAPI(path) {
 // returns a license badge based on which license is passed in
 // If there is no license, returns an empty string
 function renderLicenseBadge(license) {
-  if (license.key == "unlicense") return "";
+  if (license.key == "None") return "";
   return ` ![alt text](https://img.shields.io/badge/License-${license.key
     .replace(/-/g, "_")
     .toUpperCase()}-blue.svg)`;
-  //return ` ![alt text](https://img.shields.io/github/license/${answers.userName}/${answers.repo})`;
 }
 
 // returns the license link
 // If there is no license, returns an empty string
 function renderLicenseLink(license) {
-  if (license.key == "unlicense") return "";
+  if (license.key == "None") return "";
   return `- [License](#license)`;
 }
 
 // returns the license section of README
 // If there is no license, returns an empty string
 async function renderLicenseSection(license) {
-  if (license.key == "unlicense") return "";
+  if (license.key == "None") return "";
   const licenseLink = license.html_url;
   return `## License:
 
@@ -64,11 +63,12 @@ async function renderBadges(answers) {
     const languages = await getAPI(
       `/repos/${answers.userName}/${answers.repo}/languages`
     );
-    const badges = []; // create an array to store badge strings
-    let total = 0;
-    for (let key in languages) {
-      total += languages[key];
-    }
+    const badges = [];
+
+    const total = Object.values(languages).reduce((total, num) => {
+      return total + num;
+    }, 0);
+
     for (let language in languages) {
       badges.push(
         `![badmath](https://img.shields.io/badge/${language}-${Math.round(
@@ -101,6 +101,10 @@ async function generateMarkdown(answers) {
   - [How_to_Contribute](#how_to_contribute)
   - [Questions](#questions)
   ${renderLicenseLink(license)}
+
+  ## Installation:
+
+  &nbsp; ${answers.installation}
 
   ## Usage:
   
