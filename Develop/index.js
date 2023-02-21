@@ -1,5 +1,7 @@
-"use strict";
-// TODO: Include packages needed for this application
+//https://www.youtube.com/watch?v=Qf5EXOyGRxw&ab_channel=Markodex
+//https://coding-boot-camp.github.io/full-stack/github/professional-readme-guide
+
+// Include packages needed for this application
 const generateMarkdown = require("./utils/generateMarkdown");
 const inquirer = require("inquirer");
 const fsPromises = require("fs").promises;
@@ -8,65 +10,109 @@ const path = require("path");
 const os = require("os");
 
 const desktopPath = path.join(os.homedir(), "Desktop");
-const readmeFileName = path.join(desktopPath, "README.txt");
+const readmeFileName = path.join(desktopPath, "README.md");
 
-// TODO: Create an array of questions for user input
+var hasUserName = false;
+var hasRepo = false;
+var hasTitle = false;
+var hasDescription = false;
+var hasUserStory = false;
+let hasNewSkills = false;
+var hasTableOfContents = false;
+var hasUsage = false;
+var hasBadges = false;
+var hasHowToContribute = false;
+var hasCredits = false;
+var hasLicense = false;
+
+// Create an array of questions for user input
 const questions = [
   {
     type: "input",
-    name: "input_type",
-    message: "What is your name?",
+    name: "userName",
+    message: "Enter the repo owner's user name",
     validate: (input) => {
       if (input === "") {
+        hasUserName = true;
         return "Enter valid name";
       } else return true;
     },
   },
   {
     type: "input",
-    name: "height",
-    message: "What is your height in inches?",
+    name: "repo",
+    message: "What is the title of the repo?",
     validate: (input) => {
-      if (isNaN(input)) {
-        return "Enter valid number";
-      } else if (input === "") {
-        return "Enter valid number";
-      } else {
-        return true;
-      }
+      if (input === "") {
+        hasRepo = true;
+        return "Enter valid repo";
+      } else return true;
     },
   },
   {
     type: "input",
-    name: "weight",
-    message: "What is your weight in pounds?",
+    name: "title",
+    message: "What is the title of your project?",
     validate: (input) => {
-      if (isNaN(input)) {
-        return "Enter valid number";
-      } else if (input === "") {
-        return "Enter valid number";
-      } else {
-        return true;
-      }
+      if (input === "") {
+        hasTitle = true;
+        return "Enter valid title";
+      } else return true;
     },
   },
+  //   {
+  //     type: "input",
+  //     name: "description",
+  //     message: "Share a description of the project",
+  //     validate: (input) => {
+  //       if (input === "") {
+  //         hasDescription = true;
+  //         return "Enter valid description";
+  //       } else return true;
+  //     },
+  //   },
+  //   {
+  //     type: "input",
+  //     name: "userStory",
+  //     message: "Share a user story for the project",
+  //     validate: (input) => {
+  //       if (input === "") {
+  //         hasUserStory = true;
+  //         return "Enter valid story";
+  //       } else return true;
+  //     },
+  //   },
+  //   {
+  //     type: "input",
+  //     name: "description",
+  //     message: "Type a description of the project",
+  //     validate: (input) => {
+  //       if (isNaN(input)) {
+  //         return "Enter valid number";
+  //       } else if (input === "") {
+  //         return "Enter valid number";
+  //       } else {
+  //         return true;
+  //       }
+  //     },
+  //   },
   {
     type: "list",
     name: "list_type",
     message: "What programming languages do you know?",
-    choices: ["Javascript", "C++", "Java", "Python"],
+    choices: ["MIT", "C++", "Java", "Python"],
     default: "Javascript",
   },
-  {
-    type: "checkbox",
-    name: "checkbox_questions",
-    message: "What programming languages do you know?",
-    choices: ["Javascript", "C++", "Java", "Python"],
-    default: "Javascript",
-  },
+  //   {
+  //     type: "checkbox",
+  //     name: "checkbox_questions",
+  //     message: "What programming languages do you know?",
+  //     choices: ["Javascript", "C++", "Java", "Python"],
+  //     default: "Javascript",
+  //   },
 ];
 
-// TODO: Create a function to write README file
+// Create a function to write README file
 async function writeToFile(fileName, data) {
   try {
     await fsPromises.writeFile(fileName, data);
@@ -82,23 +128,11 @@ async function writeToFile(fileName, data) {
   });
 }
 
-// TODO: Create a function to initialize app
-function init() {
-  inquirer.prompt(questions).then((answers) => {
-    const height = answers.height;
-    const weight = answers.weight;
-    const bmi = ((weight / (height * height)) * 703).toFixed(2);
-    // Use user feedback for... whatever!!
-    let output = `Your BMI is ${bmi}\n`;
-    const data = { title: "My Awesome Project" };
-    const markdown = generateMarkdown(data);
-
-    console.log(typeof output);
-    console.log(typeof markdown);
-    output += markdown;
-
-    writeToFile(readmeFileName, output);
-  });
+// Create a function to initialize app
+async function init() {
+  const answers = await inquirer.prompt(questions);
+  const markdown = await generateMarkdown(answers);
+  await writeToFile(readmeFileName, markdown);
 }
 
 // Function call to initialize app
