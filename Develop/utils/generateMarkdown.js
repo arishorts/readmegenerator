@@ -34,7 +34,7 @@ async function getAPI(path) {
 // returns a license badge based on which license is passed in
 // If there is no license, returns an empty string
 function renderLicenseBadge(license) {
-  if (license.key == "None") return "";
+  if (license == "None") return "";
   return ` ![alt text](https://img.shields.io/badge/License-${license.key
     .replace(/-/g, "_")
     .toUpperCase()}-blue.svg)`;
@@ -43,14 +43,14 @@ function renderLicenseBadge(license) {
 // returns the license link
 // If there is no license, returns an empty string
 function renderLicenseLink(license) {
-  if (license.key == "None") return "";
+  if (license == "None") return "";
   return `- [License](#license)`;
 }
 
 // returns the license section of README
 // If there is no license, returns an empty string
 async function renderLicenseSection(license) {
-  if (license.key == "None") return "";
+  if (license == "None") return "";
   const licenseLink = license.html_url;
   return `## License:
 
@@ -85,7 +85,10 @@ async function renderBadges(answers) {
 
 // generates markdown for README
 async function generateMarkdown(answers) {
-  const license = await getAPI(`/licenses/${answers.license}`);
+  let license = "None";
+  if (answers.license !== "None") {
+    license = await getAPI(`/licenses/${answers.license}`);
+  }
   return `# ${answers.title}${renderLicenseBadge(license)}
 
   ## Description:
