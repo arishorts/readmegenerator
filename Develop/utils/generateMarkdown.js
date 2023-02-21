@@ -1,11 +1,12 @@
 const https = require("https");
 
+//uses https module to get the github API
 async function getAPI(path) {
   const options = {
     hostname: "api.github.com",
     path: `${path}`,
     headers: {
-      "User-Agent": "potential-enigma", // GitHub API requires a user-agent header
+      "User-Agent": "potential-enigma", // GitHub API requires a user-agent : repo header
     },
   };
 
@@ -30,85 +31,103 @@ async function getAPI(path) {
   });
 }
 
-// TODO: Create a function that returns a license badge based on which license is passed in
-// If there is no license, return an empty string
+// returns a license badge based on which license is passed in
+// If there is no license, returns an empty string
 function renderLicenseBadge(license) {
-  return ` ![alt text](https://img.shields.io/github/license/${license.userName}/${license.repo})`;
+  if (license.key == "unlicense") return "";
+  return ` ![alt text](https://img.shields.io/badge/License-${license.key
+    .replace(/-/g, "_")
+    .toUpperCase()}-blue.svg)`;
+  //return ` ![alt text](https://img.shields.io/github/license/${answers.userName}/${answers.repo})`;
 }
 
-// TODO: Create a function that returns the license link
-// If there is no license, return an empty string
-function renderLicenseLink(licenseObj) {
-  return `${licenseObj.html_url}`;
+// returns the license link
+// If there is no license, returns an empty string
+function renderLicenseLink(license) {
+  if (license.key == "unlicense") return "";
+  return `- [License](#license)`;
 }
 
-// TODO: Create a function that returns the license section of README
-// If there is no license, return an empty string
-async function renderLicenseSection(answers) {
-  const licenseObj = await getAPI(`/licenses/${answers.license}`);
-  const licenseLink = renderLicenseLink(licenseObj);
-  const licenseBadges = renderLicenseBadge(answers);
-  return `${licenseLink}
-  
-  ${licenseBadges}`;
+// returns the license section of README
+// If there is no license, returns an empty string
+async function renderLicenseSection(license) {
+  if (license.key == "unlicense") return "";
+  const licenseLink = license.html_url;
+  return `## License:
+
+  &nbsp; ${licenseLink}`;
 }
 
-async function renderBadges(data) {
-  const languages = await getAPI(
-    `/repos/${data.userName}/${data.repo}/languages`
-  );
-  const badges = []; // create an array to store badge strings
-  let total = 0;
-  for (let key in languages) {
-    total += languages[key];
-  }
-  for (let language in languages) {
-    badges.push(
-      `![badmath](https://img.shields.io/badge/${language}-${Math.round(
-        (languages[language] / total) * 100
-      )}%25-purple)`
+// returns badges for all languages used in the repo
+async function renderBadges(answers) {
+  try {
+    const languages = await getAPI(
+      `/repos/${answers.userName}/${answers.repo}/languages`
     );
+    const badges = []; // create an array to store badge strings
+    let total = 0;
+    for (let key in languages) {
+      total += languages[key];
+    }
+    for (let language in languages) {
+      badges.push(
+        `![badmath](https://img.shields.io/badge/${language}-${Math.round(
+          (languages[language] / total) * 100
+        )}%25-purple)`
+      );
+    }
+    return badges.join("\n");
+  } catch (err) {
+    console.log(err);
+    return "";
   }
-  return badges.join("\n");
 }
 
-// TODO: Create a function to generate markdown for README
+// generates markdown for README
 async function generateMarkdown(answers) {
-  //const info = await getAPI(`/repos/${answers.userName}/${answers.repo}`);
-  return `# ${answers.repo}
+  const license = await getAPI(`/licenses/${answers.license}`);
+  return `# ${answers.title}${renderLicenseBadge(license)}
 
-  # myWeatherService
+  ## Description:
+  
+  &nbsp; ${answers.description}
 
-  ## Description
-    
-  ### User Story:
-  
-  ### New Skills:
-  
   ## Table of Contents:
   
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [Tests](#tests)
+  - [Badges](#badges)
+  - [How_to_Contribute](#how_to_contribute)
+  - [Questions](#questions)
+  ${renderLicenseLink(license)}
+
   ## Usage:
   
-  The website can be found at: https://${answers.userName}.github.io/${
+  &nbsp; The website can be found at: https://${answers.userName}.github.io/${
     answers.repo
   }/
-  
-  ![alt text](./assets/images/usage.JPG)
-  
+
+  ## Tests:
+
+  &nbsp; ${answers.tests}
+
   ## Badges:
 
   ${await renderBadges(answers)}
 
   ## How_to_Contribute:
   
-  If you would like to contribute, refer to the [Contributor Covenant](https://www.contributor-covenant.org/)
+  &nbsp; If you would like to contribute, refer to the [Contributor Covenant](https://www.contributor-covenant.org/)
   
-  ## Credits:
-  
-  
-  ## License:
+  ## Questions:
 
-  ${await renderLicenseSection(answers)}
+  &nbsp; My GitHub profile can be found at: https://github.com/${
+    answers.userName
+  }
+  <br>&nbsp; Reach me with additional questions at : ${answers.email}
+
+  ${await renderLicenseSection(license)}
 
   ---
   
