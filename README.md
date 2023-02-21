@@ -28,6 +28,8 @@
 
 ## Usage:
 
+&nbsp; Visit this link for a demo: https://youtu.be/dklyVLiek8M
+
 &nbsp; user must enter 'node index.js' in the respsective local director folder when accessing this command-line application that accepts user input. They are then prompted for information about the application repository. When completed, a high-quality, professional README.md is generated on the desktop with the title of my project and sections entitled Description, Table of Contents, Installation, Usage, License, Contributing, Tests, and Questions. The user may make adjustments to the markdown file as needed.
 
 ![alt text](./Develop/Assets/Images/Screen.JPG)
