@@ -34,7 +34,7 @@
 
 ![alt text](./Develop/Assets/Images/Screen.JPG)
 
-&nbsp; The website can be found at: https://arishorts.github.io/readmegenerator/
+&nbsp; The website can be found at: https://github.com/arishorts/readmegenerator
 
 ## Tests:
 
