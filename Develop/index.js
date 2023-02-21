@@ -1,6 +1,9 @@
 //https://www.youtube.com/watch?v=Qf5EXOyGRxw&ab_channel=Markodex
 //https://coding-boot-camp.github.io/full-stack/github/professional-readme-guide
 //https://nodejs.org/api/https.html#httpsgetoptions-callback
+//https://shields.io/category/license
+//https://docs.github.com/en
+//https://www.npmjs.com/package/inquirer?activeTab=readme#prompt
 
 // Include packages needed for this application
 const generateMarkdown = require("./utils/generateMarkdown");
@@ -8,7 +11,6 @@ const inquirer = require("inquirer");
 const fsPromises = require("fs").promises;
 const path = require("path");
 const os = require("os");
-const { connect } = require("http2");
 
 const desktopPath = path.join(os.homedir(), "Desktop");
 const readmeFileName = path.join(desktopPath, "README.md");
